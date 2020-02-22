@@ -11,7 +11,7 @@
 *********************************************************************************************************
 */
 
-#undef NDEBUG
+// #undef NDEBUG
 #define _CRT_SECURE_NO_WARNINGS
 #include "includes.h"
 #include "debug.h"
@@ -201,9 +201,9 @@ void TaskDisplay(void *pdata)
     {
         OSTimeDlyHMSM(0, 0, 1, 0);
         sprintf(s, "%02d:%02d:%02d", elapsed_time_hh, elapsed_time_mm, elapsed_time_ss);
-        //PC_DispStr( 71,  9, s, DISP_FGND_WHITE + DISP_BGND_RED);
-        //sprintf(s, "%8u", total_score);
-        //PC_DispStr(71, 6, s, DISP_FGND_WHITE + DISP_BGND_RED);
+        PC_DispStr( 71,  9, s, DISP_FGND_WHITE + DISP_BGND_RED);
+        // sprintf(s, "%8u", total_score);
+        // PC_DispStr(71, 6, s, DISP_FGND_WHITE + DISP_BGND_RED);
     }
 }
 
@@ -233,7 +233,7 @@ void TaskElapsedTime(void *pdata)
     for (;;)
     {
 
-        log_info("%4u: ***** TaskElapsedTime *****\n", OSTime);
+        debug("%4u: ***** TaskElapsedTime *****\n", OSTime);
 
         elapsed_time_ss++;
 
@@ -253,8 +253,6 @@ void TaskElapsedTime(void *pdata)
         {
             elapsed_time_hh, elapsed_time_mm, elapsed_time_ss = 0, 0, 0;
         }
-
-        debug("elapsed_time_hh: %d, Minutes: %d, Seconds: %d", elapsed_time_hh, elapsed_time_mm, elapsed_time_ss);
 
         OSTimeDlyHMSM(0, 0, 1, 0);
     }
