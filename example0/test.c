@@ -85,10 +85,10 @@ void TaskStart(void *pdata)
     OSTaskCreate(TaskReadKey, (void *)12, &TaskReadKeyStk[TASK_STK_SIZE], 12); //Create another tasks
     debug("TaskReadyKey created");
 
-    OSTaskCreate(Task1, (void *)12, &Task1Stk[TASK_STK_SIZE], 12); //Create another tasks
+    OSTaskCreate(Task1, (void *)13, &Task1Stk[TASK_STK_SIZE], 13); //Create another tasks
     debug("Task1 created");
 
-    OSTaskCreate(Task2, (void *)12, &Task2Stk[TASK_STK_SIZE], 12); //Create another tasks
+    OSTaskCreate(Task2, (void *)14, &Task2Stk[TASK_STK_SIZE], 14); //Create another tasks
     debug("Task2 created");
 
     while (1)
