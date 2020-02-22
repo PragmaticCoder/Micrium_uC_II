@@ -32,6 +32,8 @@
 */
 OS_STK TaskStartStk[TASK_STK_SIZE]; // Task stacks
 OS_STK TaskReadKeyStk[TASK_STK_SIZE];
+OS_STK Task1Stk[TASK_STK_SIZE];
+OS_STK Task2Stk[TASK_STK_SIZE];
 
 /*
 *********************************************************************************************************
@@ -40,6 +42,8 @@ OS_STK TaskReadKeyStk[TASK_STK_SIZE];
 */
 void TaskStart(void *pdata); // The 3 tasks
 void TaskReadKey(void *pdata);
+void Task1(void *pdata);
+void Task2(void *pdata);
 
 /*
 *********************************************************************************************************
@@ -80,7 +84,13 @@ void TaskStart(void *pdata)
 {
     OSTaskCreate(TaskReadKey, (void *)12, &TaskReadKeyStk[TASK_STK_SIZE], 12); //Create another tasks
     debug("TaskReadyKey created");
-    
+
+    OSTaskCreate(Task1, (void *)12, &Task1Stk[TASK_STK_SIZE], 12); //Create another tasks
+    debug("Task1 created");
+
+    OSTaskCreate(Task2, (void *)12, &Task2Stk[TASK_STK_SIZE], 12); //Create another tasks
+    debug("Task2 created");
+
     while (1)
     {
         printf("%4u: ***** TaskStart *****\n", OSTime);
@@ -88,8 +98,39 @@ void TaskStart(void *pdata)
     }
 }
 
-/*
 
+/*
+*********************************************************************************************************
+*                                                Task 1
+*********************************************************************************************************
+*/
+
+void Task1(void *pdata)
+{
+    while (1)
+    {
+        printf("%4u: ***** Task1 *****\n", OSTime);
+        OSTimeDly(2);
+    }
+}
+
+
+/*
+*********************************************************************************************************
+*                                                Task 2
+*********************************************************************************************************
+*/
+void Task2(void *pdata)
+{
+    while (1)
+    {
+        printf("%4u: ***** Task2 *****\n", OSTime);
+        OSTimeDly(2);
+    }
+}
+
+
+/*
 *********************************************************************************************************
 *                                                Third Task
 *********************************************************************************************************
@@ -106,3 +147,5 @@ void TaskReadKey(void *pdata)
         OSTimeDly(2);
     }
 }
+
+
