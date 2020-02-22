@@ -91,7 +91,7 @@ void TaskStart(void *pdata)
     OSTaskCreate(Task2, (void *)14, &Task2Stk[TASK_STK_SIZE], 14); //Create another tasks
     debug("Task2 created");
 
-    while (1)
+    for (;;)
     {
         printf("%4u: ***** TaskStart *****\n", OSTime);
         OSTimeDly(1); //Calling sequence -->OSTaskSwHook-->OSCtxSw
@@ -107,7 +107,7 @@ void TaskStart(void *pdata)
 
 void Task1(void *pdata)
 {
-    while (1)
+    for (;;)
     {
         printf("%4u: Task1: Hello World\n", OSTime);
         OSTimeDlyHMSM(0, 0, 0, 800);
@@ -121,7 +121,7 @@ void Task1(void *pdata)
 */
 void Task2(void *pdata)
 {
-    while (1)
+    for (;;)
     {
         printf("%4u: Task2: Hello World\n", OSTime);
         OSTimeDlyHMSM(0, 0, 1, 500);
@@ -135,7 +135,7 @@ void Task2(void *pdata)
 */
 void TaskReadKey(void *pdata)
 {
-    while (1)
+    for (;;)
     {
         printf("%4u: ***** TaskReadKey *****\n", OSTime);
         if (_kbhit())
