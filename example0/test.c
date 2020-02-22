@@ -80,6 +80,7 @@ void TaskStart(void *pdata)
 {
     OSTaskCreate(TaskReadKey, (void *)12, &TaskReadKeyStk[TASK_STK_SIZE], 12); //Create another tasks
     debug("TaskReadyKey created");
+    
     while (1)
     {
         printf("%4u: ***** TaskStart *****\n", OSTime);
