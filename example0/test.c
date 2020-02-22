@@ -45,6 +45,8 @@ void TaskReadKey(void *pdata);
 void Task1(void *pdata);
 void Task2(void *pdata);
 
+int task1_count = 0;
+int task2_count = 0;
 /*
 *********************************************************************************************************
 *                                                MAIN
@@ -62,6 +64,9 @@ int main(void)
 
     // Initialize uCOS-II.
     OSInit(); //Calling sequence -->OSInitHookBegin-->OSTaskStkInit-->OSTCBInitHook-->OSTaskCreateHook-->OSInitHookEnd
+
+    task1_count = 0;
+    task2_count = 0;
 
     // Create the first task
     OSTaskCreate(TaskStart, (void *)10, &TaskStartStk[TASK_STK_SIZE], 10); //Calling sequence -->OSTaskStkInit-->OSTCBInitHook-->OSTaskCreateHook
@@ -95,7 +100,9 @@ void TaskStart(void *pdata)
     {
         printf("%4u: ***** TaskStart *****\n", OSTime);
         OSTimeDly(1); //Calling sequence -->OSTaskSwHook-->OSCtxSw
-        OSTaskSuspend(OS_PRIO_SELF);
+
+        if (task2_count == 0)
+            OSTaskSuspend(OS_PRIO_SELF);
     }
 }
 
@@ -110,6 +117,10 @@ void Task1(void *pdata)
     for (;;)
     {
         printf("%4u: Task1: Hello World\n", OSTime);
+
+        if (++task1_count == 5)
+            OSTaskSuspend(OS_PRIO_SELF);
+
         OSTimeDlyHMSM(0, 0, 0, 800);
     }
 }
@@ -125,6 +136,9 @@ void Task2(void *pdata)
     {
         printf("%4u: Task2: Hello World\n", OSTime);
         OSTimeDlyHMSM(0, 0, 1, 500);
+
+        if(++task2_count == 7)
+            OSTaskResume(10);
     }
 }
 
