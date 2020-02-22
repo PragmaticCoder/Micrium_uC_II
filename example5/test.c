@@ -7,8 +7,15 @@
 *                          (c) Copyright 2004, Werner.Zimmermann@fht-esslingen.de
 *                                           All Rights Reserved
 *
-*                                               EXAMPLE #0
+*                                               EXAMPLE #5
 *             Used to study the scheduling behaviour of the WIN32 and LINUX port during development
+*
+* NOTE: This program will fails when running for some minutes, because OSTaskDel() does lead to memory
+*       leaks. This is not a fault of uCOS-II, but a bug in the WIN32 port, which currently cannot be solved
+*       due to the nature of the port's implementation. In the WIN32 port a uCOS-II task is mapped to a
+*       WIN32 thread. However, WIN32 threads can only be terminated by other threads, using WIN32 API function
+*       TerminateThread(), which causes memory leaks.
+*
 *********************************************************************************************************
 */
 #define _CRT_SECURE_NO_WARNINGS
@@ -21,30 +28,25 @@
 */
 
 #define TASK_STK_SIZE   1024                                    // Stack size, in bytes
-
-//#define SUSPEND_RESUME                                        // Task 1 and 2 use suspend and resume for scheduling
-                                                                // (if not defined: use time delays)
+#define BASE_PRIO	32
 
 /*
 *********************************************************************************************************
 *                                               VARIABLES
 *********************************************************************************************************
 */
-OS_STK  TestTaskStk1[TASK_STK_SIZE];                            // Task stacks
-OS_STK  TestTaskStk2[TASK_STK_SIZE];
-OS_STK  TestTaskStk3[TASK_STK_SIZE];
-OS_STK  TestTaskStk4[TASK_STK_SIZE];
+OS_STK  TestTaskStkX[TASK_STK_SIZE];                            // Task stacks
+OS_STK  TestTaskStk[8][TASK_STK_SIZE];
+
+int toggle = 1;
 
 /*
 *********************************************************************************************************
 *                                           FUNCTION PROTOTYPES
 *********************************************************************************************************
 */
-void TestTask1(void *pdata);                                    // The 3 tasks
-void TestTask2(void *pdata);
-void TestTask3(void *pdata);
-void TestTask4(void *pdata);
-void OurIsr1(void);                                             // The interrupt service routine for IRQ 1
+void TestTaskX(void *pdata);                                    // Tasks
+void TestTask(void *pdata);
 
 /*
 *********************************************************************************************************
@@ -65,9 +67,7 @@ int main(void)
     OSInit();                                                               //Calling sequence -->OSInitHookBegin-->OSTaskStkInit-->OSTCBInitHook-->OSTaskCreateHook-->OSInitHookEnd
 
     // Create the first task
-    OSTaskCreate(TestTask1, (void *) 11, &TestTaskStk1[TASK_STK_SIZE], 11); //Calling sequence -->OSTaskStkInit-->OSTCBInitHook-->OSTaskCreateHook
-
-    PC_IntVectSet(1, OurIsr1);                                              //Install an interrupt service routine for IRQ 1
+    OSTaskCreate(TestTaskX, (void *) 0, &TestTaskStkX[TASK_STK_SIZE], 4); //Calling sequence -->OSTaskStkInit-->OSTCBInitHook-->OSTaskCreateHook
 
     // Start multitasking.
     OSStart();                                                              //Calling sequence -->OSTaskSwHook-->OSStartHighRdy
@@ -78,31 +78,52 @@ int main(void)
     return 0;
 }
 
-
 /*
 *********************************************************************************************************
 *                                                First Task (startup task)
 *********************************************************************************************************
 */
-void TestTask1(void *pdata)
-{   printf("%4u: ***** Test Task 1 First call *****\n", OSTime);
+void TestTaskX(void *pdata)
+{   int i;
+    printf("%4u: ***** Test Task X with prio %d First call *****\n", OSTime, OSPrioCur);
 
 #if OS_TASK_STAT_EN > 0
     OSStatInit();                                                               //Initialize the statistics task
 #endif
 
-    OSTaskCreate(TestTask2, (void *) 22, &TestTaskStk2[TASK_STK_SIZE], 22);     //Create 3 other tasks
-    OSTaskCreate(TestTask3, (void *) 33, &TestTaskStk3[TASK_STK_SIZE], 33);
-    OSTaskCreate(TestTask4, (void *) 10, &TestTaskStk4[TASK_STK_SIZE], 10);
 
     while (1)
-    {   printf("%4u: ***** Test Task 11 *****\n", OSTime);
-
-#ifdef SUSPEND_RESUME
-        OSTaskSuspend(OS_PRIO_SELF);                                            //Calling sequence -->OSTaskSwHook-->OSCtxSw
-#else
+    {   if (toggle==1)
+        {   printf("%4u: ***** Test Task X ***** Creating new task\n", OSTime);
+            OSTaskCreate(TestTask, (void*)(0), &TestTaskStk[0][TASK_STK_SIZE], BASE_PRIO);     //Create the next task
+        } else if (toggle<8)
+	{   OSSchedLock();
+            printf("%4u: ***** Test Task X ***** Changing task priorities\n", OSTime);
+	    if (toggle % 2)
+	    {   for (i=0; i<8; i++)
+      	     	    OSTaskChangePrio(BASE_PRIO+i,BASE_PRIO-i);
+      	    } else
+      	    {  for (i=0; i<8; i++)
+      	    	    OSTaskChangePrio(BASE_PRIO-i,BASE_PRIO+i);
+      	    }
+            OSSchedUnlock();
+	} else if (toggle==9)
+	{   printf("%4u: ***** Test Task X ***** Deleting tasks 0 ... 7\n", OSTime);
+	    if (toggle % 2)
+	    {   for (i=0; i<8; i++)
+      	    	    OSTaskDel(BASE_PRIO-i);
+      	    } else
+      	    {  for (i=0; i<8; i++)
+      	    	    OSTaskDel(BASE_PRIO+i);
+       	    }
+	} else if (toggle>15)
+    	{   toggle=0;
+    	    printf("%4u: ***** Test Task X *****\n", OSTime);
+        } else
+	{   printf("%4u: ***** Test Task X *****\n", OSTime);
+	}
+        toggle++;
         OSTimeDly(1);                                                           //Calling sequence -->OSTaskSwHook-->OSCtxSw
-#endif
     }
 }
 
@@ -111,68 +132,22 @@ void TestTask1(void *pdata)
 *                                                Second Task
 *********************************************************************************************************
 */
-void TestTask2(void *pdata)
-{   while (1)
-    {   printf("%4u: ***** Test Task 22 *****\n", OSTime);
+void TestTask(void *pdata)
+{   int i=(int) pdata;
+    printf("%4u: ***** Test Task %d with prio %d First call *****\n", OSTime, i, OSPrioCur);
 
-#ifdef SUSPEND_RESUME
-        OSTaskSuspend(OS_PRIO_SELF);
-#else
+    if ((int) pdata<7)
+    {	printf("%4u: ***** Test Task %d ***** Creating new task\n", OSTime, i);
+    	OSTaskCreate(TestTask, (void*)(i+1), &TestTaskStk[(int) pdata][TASK_STK_SIZE], BASE_PRIO-(i+1));     //Create the next task
+    }
+
+    while (1)
+    {   printf("%4u: ***** Test Task %d with prio %d *****\n", OSTime, i, OSPrioCur);
+        if (toggle==4 && (i==6 || i==7))
+        {
+            printf("%4u: ***** Test Task %d with prio %d deletes itself*****\n", OSTime, i, OSPrioCur);
+            OSTaskDel(OS_PRIO_SELF);
+        }
         OSTimeDly(1);
-#endif
     }
-}
-
-/*
-*********************************************************************************************************
-*                                                Third Task
-*********************************************************************************************************
-*/
-void TestTask3(void *pdata)
-{   while (1)
-    {
-#ifdef SUSPEND_RESUME
-        printf("%4u: ***** Test Task 33 *****\n", OSTime);
-        OSTaskResume(11);
-
-        printf("%4u: ***** Test Task 33 *****\n", OSTime);
-        OSTaskResume(22);
-#endif
-        printf("%4u: ***** Test Task 33 *****\n", OSTime);
-        OSTimeDly(1);
-
-        if (_kbhit())
-	{   OSTaskDel(10);
-	    OSTaskDel(11);
-	    OSTaskDel(22);
-	    exit(0);
-	}
-    }
-}
-
-/*
-*********************************************************************************************************
-*                                                Forth Task
-*********************************************************************************************************
-*/
-void TestTask4(void *pdata)
-{   while (1)
-    {
-        printf("%4u: +++++ Test Task 40 +++++\n", OSTime);
-        OSTaskSuspend(10);                                      //Suspend yourself
-    }
-}
-
-
-/*
-*********************************************************************************************************
-*                                     Interrupt service routine for IRQ 1
-*                                (use "irqGenerator 1" to trigger this interrupt)
-*********************************************************************************************************
-*/
-void OurIsr1(void)
-{       OSIntEnter();
-        printf("##### Interrupt service routine for IRQ 1 #####\n");
-        OSTaskResume(10);                                       //Trigger task 4
-        OSIntExit();
 }
