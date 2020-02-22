@@ -111,8 +111,8 @@ void Task1(void *pdata)
 {
     while (1)
     {
-        printf("%4u: ***** Task1 *****\n", OSTime);
-        OSTimeDly(4);
+        printf("%4u: Task1: Hello World\n", OSTime);
+        OSTimeDly(1);
     }
 }
 
@@ -126,8 +126,8 @@ void Task2(void *pdata)
 {
     while (1)
     {
-        printf("%4u: ***** Task2 *****\n", OSTime);
-        OSTimeDly(8);
+        printf("%4u: Task2: Hello World\n", OSTime);
+        OSTimeDly(2);
     }
 }
 
