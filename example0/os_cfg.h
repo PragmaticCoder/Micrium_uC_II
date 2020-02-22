@@ -26,6 +26,9 @@
 *********************************************************************************************************
 */
 
+#define OS_APP_HOOKS_EN           0
+#define OS_EVENT_MULTI_EN         0
+
 #define OS_ARG_CHK_EN             1    /* Enable (1) or Disable (0) argument checking                  */
 
 #define OS_CPU_HOOKS_EN           1    /* uC/OS-II hooks are found in the processor port files         */
