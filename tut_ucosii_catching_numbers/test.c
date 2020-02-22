@@ -44,7 +44,7 @@ OS_STK TaskScanKeyStk[TASK_STK_SIZE];
 OS_STK TaskDisplayStk[TASK_STK_SIZE];
 OS_STK TaskElapsedTimeStk[TASK_STK_SIZE];
 
-int hours, minutes, seconds;
+int elapsed_time_hh, elapsed_time_mm, elapsed_time_ss;
 
 // Declare semaphores here
 
@@ -75,7 +75,7 @@ int main(void)
 
     OSInit(); // Initialize uC/OS-II
 
-    hours, minutes, seconds = 0, 0, 0;
+    elapsed_time_hh, elapsed_time_mm, elapsed_time_ss = 0, 0, 0;
 
     // Create semaphores here
 
@@ -200,7 +200,7 @@ void TaskDisplay(void *pdata)
     for (;;)
     {
         OSTimeDlyHMSM(0, 0, 1, 0);
-        //sprintf(s, "%02d:%02d:%02d", elapsed_time_hh, elapsed_time_mm, elapsed_time_ss);
+        sprintf(s, "%02d:%02d:%02d", elapsed_time_hh, elapsed_time_mm, elapsed_time_ss);
         //PC_DispStr( 71,  9, s, DISP_FGND_WHITE + DISP_BGND_RED);
         //sprintf(s, "%8u", total_score);
         //PC_DispStr(71, 6, s, DISP_FGND_WHITE + DISP_BGND_RED);
@@ -235,26 +235,26 @@ void TaskElapsedTime(void *pdata)
 
         log_info("%4u: ***** TaskElapsedTime *****\n", OSTime);
 
-        seconds++;
+        elapsed_time_ss++;
 
-        if (seconds >= MAX_SECONDS)
+        if (elapsed_time_ss >= MAX_SECONDS)
         {
-            minutes++;
-            seconds = 0;
+            elapsed_time_mm++;
+            elapsed_time_ss = 0;
         }
 
-        if (minutes >= MAX_MINUTES)
+        if (elapsed_time_mm >= MAX_MINUTES)
         {
-            hours++;
-            minutes = 0;
+            elapsed_time_hh++;
+            elapsed_time_mm = 0;
         }
 
-        if (hours >= MAX_HOURS)
+        if (elapsed_time_hh >= MAX_HOURS)
         {
-            hours, minutes, seconds = 0, 0, 0;
+            elapsed_time_hh, elapsed_time_mm, elapsed_time_ss = 0, 0, 0;
         }
 
-        debug("Hours: %d, Minutes: %d, Seconds: %d", hours, minutes, seconds);
+        debug("elapsed_time_hh: %d, Minutes: %d, Seconds: %d", elapsed_time_hh, elapsed_time_mm, elapsed_time_ss);
 
         OSTimeDlyHMSM(0, 0, 1, 0);
     }
