@@ -11,6 +11,8 @@
 *             Used to study the scheduling behaviour of the WIN32 and LINUX port during development
 *********************************************************************************************************
 */
+
+#undef NDEBUG
 #define _CRT_SECURE_NO_WARNINGS
 #include "includes.h"
 #include "debug.h"
@@ -77,7 +79,7 @@ int main(void)
 void TaskStart(void *pdata)
 {
     OSTaskCreate(TaskReadKey, (void *)12, &TaskReadKeyStk[TASK_STK_SIZE], 12); //Create another tasks
-
+    debug("TaskReadyKey created");
     while (1)
     {
         printf("%4u: ***** TaskStart *****\n", OSTime);

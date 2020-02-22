@@ -15,7 +15,7 @@ EXAMPLE=test.c
 
 all:	$(EXAMPLE) app_cfg.h  os_cfg.h  includes.h  $(UCOS_PORT_LIB)\ucos_ii.lib  makefile.vc
 	@echo --- Recompiling the application ---
-	@cl -nologo /MD /W3 /D__WIN32__ /I$(UCOS_SRC) /I$(UCOS_PORT_SRC) /I$(UCOS_PORT_EX) $(EXAMPLE) $(UCOS_PORT_LIB)\ucos_ii.lib winmm.lib user32.lib
+	@cl -nologo -DNDEBUG /MD /W3 /D__WIN32__ /I$(UCOS_SRC) /I$(UCOS_PORT_SRC) /I$(UCOS_PORT_EX) $(EXAMPLE) $(UCOS_PORT_LIB)\ucos_ii.lib winmm.lib user32.lib
 
 $(UCOS_PORT_LIB)\ucos_ii.lib:	os_cfg.h $(UCOS_PORT_SRC)\os_cpu_c.c $(UCOS_PORT_SRC)\os_cpu.h $(UCOS_PORT_SRC)\pc.c $(UCOS_PORT_SRC)\pc.h
 	@echo --- Recompiling ucos_ii.lib ---
