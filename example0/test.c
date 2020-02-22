@@ -90,7 +90,6 @@ void TaskStart(void *pdata)
 
     OSTaskCreate(Task2, (void *)14, &Task2Stk[TASK_STK_SIZE], 14); //Create another tasks
     debug("Task2 created");
-    
 
     while (1)
     {
@@ -99,7 +98,6 @@ void TaskStart(void *pdata)
         OSTaskSuspend(OS_PRIO_SELF);
     }
 }
-
 
 /*
 *********************************************************************************************************
@@ -112,10 +110,9 @@ void Task1(void *pdata)
     while (1)
     {
         printf("%4u: Task1: Hello World\n", OSTime);
-        OSTimeDly(1);
+        OSTimeDlyHMSM(0, 0, 0, 800);
     }
 }
-
 
 /*
 *********************************************************************************************************
@@ -127,10 +124,10 @@ void Task2(void *pdata)
     while (1)
     {
         printf("%4u: Task2: Hello World\n", OSTime);
-        OSTimeDly(2);
+        OSTimeDlyHMSM(0, 0, 0, 800);
+        OSTimeDlyHMSM(0, 0, 0, 700);
     }
 }
-
 
 /*
 *********************************************************************************************************
@@ -149,5 +146,3 @@ void TaskReadKey(void *pdata)
         OSTimeDly(2);
     }
 }
-
-
