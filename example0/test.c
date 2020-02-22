@@ -124,8 +124,7 @@ void Task2(void *pdata)
     while (1)
     {
         printf("%4u: Task2: Hello World\n", OSTime);
-        OSTimeDlyHMSM(0, 0, 0, 800);
-        OSTimeDlyHMSM(0, 0, 0, 700);
+        OSTimeDlyHMSM(0, 0, 1, 500);
     }
 }
 
