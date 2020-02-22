@@ -90,11 +90,13 @@ void TaskStart(void *pdata)
 
     OSTaskCreate(Task2, (void *)14, &Task2Stk[TASK_STK_SIZE], 14); //Create another tasks
     debug("Task2 created");
+    
 
     while (1)
     {
         printf("%4u: ***** TaskStart *****\n", OSTime);
         OSTimeDly(1); //Calling sequence -->OSTaskSwHook-->OSCtxSw
+        OSTaskSuspend(OS_PRIO_SELF);
     }
 }
 
@@ -110,7 +112,7 @@ void Task1(void *pdata)
     while (1)
     {
         printf("%4u: ***** Task1 *****\n", OSTime);
-        OSTimeDly(2);
+        OSTimeDly(4);
     }
 }
 
@@ -125,7 +127,7 @@ void Task2(void *pdata)
     while (1)
     {
         printf("%4u: ***** Task2 *****\n", OSTime);
-        OSTimeDly(2);
+        OSTimeDly(8);
     }
 }
 
