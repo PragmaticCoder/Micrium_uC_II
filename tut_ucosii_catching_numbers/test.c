@@ -10,6 +10,8 @@
 *                                                                                         
 *********************************************************************************************************
 */
+
+#undef NDEBUG
 #define _CRT_SECURE_NO_WARNINGS
 #include "includes.h"
 #include "debug.h"
@@ -27,6 +29,10 @@
 #define TaskDisplayPrio 9
 #define TaskElapsedPrio 2
 
+#define MAX_HOURS 24
+#define MAX_MINUTES 60
+#define MAX_SECONDS 60
+
 /*
 *********************************************************************************************************
 *                                               VARIABLES
@@ -37,6 +43,8 @@ OS_STK TaskStartStk[TASK_STK_SIZE];
 OS_STK TaskScanKeyStk[TASK_STK_SIZE];
 OS_STK TaskDisplayStk[TASK_STK_SIZE];
 OS_STK TaskElapsedTimeStk[TASK_STK_SIZE];
+
+int hours, minutes, seconds;
 
 // Declare semaphores here
 
@@ -50,6 +58,7 @@ void TaskStart(void *data); /* Function prototypes of Startup task           */
 void TaskScanKey(void *data);
 void TaskDisplay(void *data);
 void TaskElapsedTime(void *data);
+
 static void TaskStartCreateTasks(void);
 static void TaskStartDispInit(void);
 
@@ -65,6 +74,8 @@ int main(void)
     PC_DispClrScr(DISP_FGND_WHITE + DISP_BGND_BLACK); // Clear the screen
 
     OSInit(); // Initialize uC/OS-II
+
+    hours, minutes, seconds = 0, 0, 0;
 
     // Create semaphores here
 
@@ -221,7 +232,30 @@ void TaskElapsedTime(void *pdata)
 {
     for (;;)
     {
+
         log_info("%4u: ***** TaskElapsedTime *****\n", OSTime);
-        OSTimeDly(1);
+
+        seconds++;
+
+        if (seconds >= MAX_SECONDS)
+        {
+            minutes++;
+            seconds = 0;
+        }
+
+        if (minutes >= MAX_MINUTES)
+        {
+            hours++;
+            minutes = 0;
+        }
+
+        if (hours >= MAX_HOURS)
+        {
+            hours, minutes, seconds = 0, 0, 0;
+        }
+
+        debug("Hours: %d, Minutes: %d, Seconds: %d", hours, minutes, seconds);
+
+        OSTimeDlyHMSM(0, 0, 1, 0);
     }
 }
