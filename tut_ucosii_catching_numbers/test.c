@@ -201,7 +201,7 @@ void TaskDisplay(void *pdata)
     {
         OSTimeDlyHMSM(0, 0, 1, 0);
         sprintf(s, "%02d:%02d:%02d", elapsed_time_hh, elapsed_time_mm, elapsed_time_ss);
-        PC_DispStr( 71,  9, s, DISP_FGND_WHITE + DISP_BGND_RED);
+        PC_DispStr(71, 9, s, DISP_FGND_WHITE + DISP_BGND_RED);
         // sprintf(s, "%8u", total_score);
         // PC_DispStr(71, 6, s, DISP_FGND_WHITE + DISP_BGND_RED);
     }
@@ -250,9 +250,7 @@ void TaskElapsedTime(void *pdata)
         }
 
         if (elapsed_time_hh >= MAX_HOURS)
-        {
             elapsed_time_hh, elapsed_time_mm, elapsed_time_ss = 0, 0, 0;
-        }
 
         OSTimeDlyHMSM(0, 0, 1, 0);
     }
