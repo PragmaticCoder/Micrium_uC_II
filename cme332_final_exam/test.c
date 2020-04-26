@@ -35,6 +35,8 @@ OS_STK TaskReadKeyStk[TASK_STK_SIZE];
 OS_STK Task1Stk[TASK_STK_SIZE];
 OS_STK Task2Stk[TASK_STK_SIZE];
 
+OS_EVENT *SemQuiz;
+
 /*
 *********************************************************************************************************
 *                                           FUNCTION PROTOTYPES
@@ -45,8 +47,6 @@ void TaskReadKey(void *pdata);
 void Task1(void *pdata);
 void Task2(void *pdata);
 
-int task1_count = 0;
-int task2_count = 0;
 /*
 *********************************************************************************************************
 *                                                MAIN
@@ -65,8 +65,7 @@ int main(void)
     // Initialize uCOS-II.
     OSInit(); //Calling sequence -->OSInitHookBegin-->OSTaskStkInit-->OSTCBInitHook-->OSTaskCreateHook-->OSInitHookEnd
 
-    task1_count = 0;
-    task2_count = 0;
+    SemQuiz = OSSemCreate(0);
 
     // Create the first task
     OSTaskCreate(TaskStart, (void *)10, &TaskStartStk[TASK_STK_SIZE], 10); //Calling sequence -->OSTaskStkInit-->OSTCBInitHook-->OSTaskCreateHook
@@ -87,22 +86,21 @@ int main(void)
 */
 void TaskStart(void *pdata)
 {
-    OSTaskCreate(TaskReadKey, (void *)12, &TaskReadKeyStk[TASK_STK_SIZE], 12); //Create another tasks
-    debug("TaskReadyKey created");
+    // OSTaskCreate(TaskReadKey, (void *)12, &TaskReadKeyStk[TASK_STK_SIZE], 12); //Create another tasks
+    // debug("TaskReadyKey created");
 
     OSTaskCreate(Task1, (void *)13, &Task1Stk[TASK_STK_SIZE], 13); //Create another tasks
-    debug("Task1 created");
+    debug("TaskA created");
 
     OSTaskCreate(Task2, (void *)14, &Task2Stk[TASK_STK_SIZE], 14); //Create another tasks
-    debug("Task2 created");
+    debug("TaskB created");
 
     for (;;)
     {
         printf("%4u: ***** TaskStart *****\n", OSTime);
         OSTimeDly(1); //Calling sequence -->OSTaskSwHook-->OSCtxSw
 
-        if (task2_count == 0)
-            OSTaskSuspend(OS_PRIO_SELF);
+        OSTaskSuspend(OS_PRIO_SELF);
     }
 }
 
@@ -114,14 +112,22 @@ void TaskStart(void *pdata)
 
 void Task1(void *pdata)
 {
+    INT16U sem_value;
     for (;;)
     {
-        printf("%4u: Task1: Hello World\n", OSTime);
+        printf("%4u: A0\n", OSTime);
+        sem_value = OSSemAccept(SemQuiz);
 
-        if (++task1_count == 5)
-            OSTaskSuspend(OS_PRIO_SELF);
+        if (sem_value > 0)
+            printf("%4u: A1\n", OSTime);
+        else {
+            
+            printf("%4u: A2\n", OSTime);
+            OSSemPost(SemQuiz);
+        }
 
-        OSTimeDlyHMSM(0, 0, 0, 800);
+        printf("%4u: A3\n", OSTime);
+        OSTimeDly(1);
     }
 }
 
@@ -132,13 +138,18 @@ void Task1(void *pdata)
 */
 void Task2(void *pdata)
 {
+    INT8U err;
+
     for (;;)
     {
-        printf("%4u: Task2: Hello World\n", OSTime);
-        OSTimeDlyHMSM(0, 0, 1, 500);
+        printf("%4u: B0\n", OSTime);
+        OSSemPend(SemQuiz, 0, &err);
 
-        if(++task2_count == 7)
-            OSTaskResume(10);
+        printf("%4u: B1\n", OSTime);
+        OSSemPost(SemQuiz);
+        printf("%4u: B2\n", OSTime);
+        OSTimeDly(1);
+
     }
 }
 
